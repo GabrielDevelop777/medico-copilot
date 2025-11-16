@@ -1,4 +1,4 @@
-import { Toaster } from "@/components/ui/toaster"; // <--- IMPORTANTE: Importar isso
+import { Toaster } from "@/components/ui/toaster";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import Consulta from "./pages/Consulta";
 import Historico from "./pages/Historico";

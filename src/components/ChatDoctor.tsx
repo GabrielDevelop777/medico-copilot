@@ -1,4 +1,4 @@
-import jsPDF from "jspdf"; // Importamos o jsPDF
+import jsPDF from "jspdf";
 import {
 	Bot,
 	Download,
@@ -15,13 +15,13 @@ import { Input } from "./ui/input";
 
 interface ChatProps {
 	contextoAnalise: any;
-	onOpen?: () => void; // Propriedade que recebemos da Consulta.tsx
+	onOpen?: () => void;
 }
 
 interface Message {
 	role: "user" | "assistant";
 	content: string;
-	atestadoData?: AtestadoData; // Opcional: dados estruturados do atestado
+	atestadoData?: AtestadoData;
 }
 
 // Estrutura do JSON que o back-end vai mandar
@@ -109,7 +109,6 @@ const ChatDoctor: React.FC<ChatProps> = ({ contextoAnalise, onOpen }) => {
 			let iaMsgContent = data.resposta;
 			let atestadoData: AtestadoData | undefined = undefined;
 
-			// ===== CORREÇÃO DA "MÁGICA DA DETECÇÃO" =====
 			try {
 				// 1. Procura por um bloco JSON ({...}) dentro da resposta da IA
 				const jsonMatch = data.resposta.match(/\{[\s\S]*\}/);
@@ -135,7 +134,6 @@ const ChatDoctor: React.FC<ChatProps> = ({ contextoAnalise, onOpen }) => {
 				// 5. Deu erro no parse ou era só texto mesmo.
 				iaMsgContent = data.resposta;
 			}
-			// ===== FIM DA CORREÇÃO =====
 
 			// Adiciona resposta da IA na tela
 			setMessages((prev) => [
@@ -249,7 +247,7 @@ const ChatDoctor: React.FC<ChatProps> = ({ contextoAnalise, onOpen }) => {
 						value={inputValue}
 						onChange={(e) => setInputValue(e.target.value)}
 						onKeyDown={(e) => e.key === "Enter" && handleSend()}
-						onFocus={handleFocus} // Chama a função para o StepIndicator
+						onFocus={handleFocus}
 						className="flex-1"
 						disabled={isLoading}
 					/>
