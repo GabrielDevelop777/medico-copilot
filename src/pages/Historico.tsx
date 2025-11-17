@@ -159,6 +159,7 @@ const Historico = () => {
 				title: "Sucesso!",
 				description: "Análise excluída permanentemente.",
 				className: "bg-green-50 border-green-200 text-green-800",
+				duration: 3000,
 			});
 		} catch (err: any) {
 			console.error("Erro ao deletar:", err);
@@ -166,6 +167,7 @@ const Historico = () => {
 				title: "Erro ao excluir",
 				description: err.message || "Não foi possível remover a análise.",
 				variant: "destructive",
+				duration: 3000,
 			});
 		}
 	};

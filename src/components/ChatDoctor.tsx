@@ -2,15 +2,17 @@ import jsPDF from "jspdf";
 import {
 	Bot,
 	Download,
+	FileText,
 	Loader2,
-	MessageSquarePlus,
+	MessageSquare,
 	Send,
+	Sparkles,
 	User,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { enviarMensagemChatService } from "../services/api";
 import { Button } from "./ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
+import { Card, CardContent, CardHeader } from "./ui/card";
 import { Input } from "./ui/input";
 
 interface ChatProps {
@@ -24,7 +26,6 @@ interface Message {
 	atestadoData?: AtestadoData;
 }
 
-// Estrutura do JSON que o back-end vai mandar
 interface AtestadoData {
 	tipo: "ATESTADO";
 	nomePaciente: string;
@@ -50,15 +51,13 @@ const gerarAtestadoPDF = (data: AtestadoData) => {
 
 	const textoCorpo = `Atesto para os devidos fins que o(a) Sr(a) ${data.nomePaciente} necessita de ${data.diasAfastamento} de afastamento de suas atividades laborais, a partir de ${data.dataInicio}, por motivos de doença.`;
 
-	const splitText = doc.splitTextToSize(textoCorpo, 170); // 170mm de largura
+	const splitText = doc.splitTextToSize(textoCorpo, 170);
 	doc.text(splitText, 20, 50);
 
-	// CID (se houver)
 	if (data.cid) {
 		doc.text(`CID: ${data.cid}`, 20, 70);
 	}
 
-	// Assinatura
 	const dataAtual = new Date().toLocaleDateString("pt-BR", {
 		day: "2-digit",
 		month: "long",
@@ -110,32 +109,25 @@ const ChatDoctor: React.FC<ChatProps> = ({ contextoAnalise, onOpen }) => {
 			let atestadoData: AtestadoData | undefined = undefined;
 
 			try {
-				// 1. Procura por um bloco JSON ({...}) dentro da resposta da IA
 				const jsonMatch = data.resposta.match(/\{[\s\S]*\}/);
 
 				if (jsonMatch) {
-					// 2. Se achou um bloco, tenta parsear SÓ ELE
 					const parsedJson = JSON.parse(jsonMatch[0]);
 
-					// 3. Verifica se é um atestado
 					if (parsedJson && parsedJson.tipo === "ATESTADO") {
 						iaMsgContent =
 							"Gerei o atestado solicitado. Clique no botão abaixo para fazer o download.";
 						atestadoData = parsedJson;
 					} else {
-						// É um JSON, mas não é um atestado (raro)
 						iaMsgContent = data.resposta;
 					}
 				} else {
-					// 4. Não achou JSON, é só texto normal
 					iaMsgContent = data.resposta;
 				}
 			} catch (e) {
-				// 5. Deu erro no parse ou era só texto mesmo.
 				iaMsgContent = data.resposta;
 			}
 
-			// Adiciona resposta da IA na tela
 			setMessages((prev) => [
 				...prev,
 				{
@@ -165,61 +157,119 @@ const ChatDoctor: React.FC<ChatProps> = ({ contextoAnalise, onOpen }) => {
 	};
 
 	return (
-		<Card className="w-full max-w-4xl mx-auto mt-8 border-t-4 border-t-primary shadow-lg animate-in fade-in slide-in-from-bottom-8 duration-1000">
-			<CardHeader className="bg-muted/30 pb-4">
-				<CardTitle className="flex items-center gap-2 text-xl">
-					<MessageSquarePlus className="text-primary h-6 w-6" />
-					Copilot Chat
-					<span className="text-sm font-normal text-muted-foreground ml-2">
-						Faça perguntas sobre este caso clínico
-					</span>
-				</CardTitle>
+		<Card className="w-full max-w-5xl mx-auto mt-8 border-2 border-slate-200 shadow-2xl overflow-hidden animate-in fade-in slide-in-from-bottom-8 duration-1000">
+			{/* Header Premium */}
+			<CardHeader className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 relative overflow-hidden p-0">
+				{/* Pattern de fundo */}
+				<div className="absolute inset-0 opacity-5">
+					<div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff_1px,transparent_1px),linear-gradient(to_bottom,#ffffff_1px,transparent_1px)] bg-[size:24px_24px]" />
+				</div>
+
+				<div className="relative px-6 py-5">
+					<div className="flex items-center justify-between flex-wrap gap-4">
+						<div className="flex items-center gap-4">
+							<div className="p-3 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-xl shadow-lg">
+								<MessageSquare className="h-6 w-6 text-white" />
+							</div>
+							<div>
+								<h3 className="text-xl font-bold text-white flex items-center gap-2">
+									Copilot Chat Médico
+									<span className="px-2.5 py-1 bg-blue-600/20 text-blue-300 text-xs font-semibold rounded-md border border-blue-500/30 uppercase tracking-wider">
+										IA
+									</span>
+								</h3>
+								<p className="text-slate-300 text-sm mt-0.5">
+									Assistente inteligente para análise clínica
+								</p>
+							</div>
+						</div>
+
+						<div className="flex items-center gap-2 bg-slate-800/50 backdrop-blur-sm px-3 py-2 rounded-lg border border-slate-700">
+							<Sparkles className="h-4 w-4 text-yellow-400" />
+							<span className="text-xs text-slate-300 font-medium">
+								Powered by AI
+							</span>
+						</div>
+					</div>
+				</div>
+
+				<div className="h-1 bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-600" />
 			</CardHeader>
 
 			<CardContent className="p-0">
 				{/* Área de Mensagens */}
-				<div className="h-[300px] overflow-y-auto p-4 space-y-4 bg-slate-50/50">
+				<div className="h-[400px] overflow-y-auto p-6 space-y-4 bg-gradient-to-br from-slate-50 to-slate-100/50">
 					{messages.length === 0 && (
-						<div className="text-center text-muted-foreground mt-10 opacity-60">
-							<p>Exemplos de perguntas:</p>
-							<p className="text-sm italic">"Crie um atestado de 3 dias"</p>
-							<p className="text-sm italic">
-								"Qual a posologia infantil para o medicamento sugerido?"
-							</p>
+						<div className="flex items-center justify-center h-full">
+							<div className="text-center space-y-6 max-w-md">
+								<div className="inline-block p-4 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl border-2 border-blue-200 shadow-md">
+									<Bot className="h-12 w-12 text-blue-600 mx-auto" />
+								</div>
+								<div className="space-y-3">
+									<h4 className="text-lg font-semibold text-slate-800">
+										Como posso ajudar?
+									</h4>
+									<div className="space-y-2 text-sm text-slate-600">
+										<div className="bg-white p-3 rounded-lg border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
+											<FileText className="h-4 w-4 inline mr-2 text-blue-600" />
+											"Crie um atestado de 3 dias"
+										</div>
+										<div className="bg-white p-3 rounded-lg border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
+											<Bot className="h-4 w-4 inline mr-2 text-indigo-600" />
+											"Qual a posologia infantil para o medicamento?"
+										</div>
+										<div className="bg-white p-3 rounded-lg border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
+											<Sparkles className="h-4 w-4 inline mr-2 text-purple-600" />
+											"Explique o diagnóstico de forma simplificada"
+										</div>
+									</div>
+								</div>
+							</div>
 						</div>
 					)}
 
 					{messages.map((msg, idx) => (
 						<div
 							key={idx}
-							className={`flex w-full ${msg.role === "user" ? "justify-end" : "justify-start"}`}
+							className={`flex w-full ${msg.role === "user" ? "justify-end" : "justify-start"} animate-in fade-in slide-in-from-bottom-2 duration-300`}
 						>
 							<div
-								className={`flex max-w-[80%] gap-2 ${msg.role === "user" ? "flex-row-reverse" : "flex-row"}`}
+								className={`flex max-w-[85%] gap-3 ${msg.role === "user" ? "flex-row-reverse" : "flex-row"}`}
 							>
+								{/* Avatar */}
 								<div
-									className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${msg.role === "user" ? "bg-primary text-white" : "bg-emerald-600 text-white"}`}
-								>
-									{msg.role === "user" ? <User size={16} /> : <Bot size={16} />}
-								</div>
-								<div
-									className={`p-3 rounded-2xl text-sm leading-relaxed shadow-sm ${
+									className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 shadow-md ${
 										msg.role === "user"
-											? "bg-primary text-primary-foreground rounded-tr-none"
-											: "bg-white border border-slate-200 text-slate-800 rounded-tl-none"
+											? "bg-gradient-to-br from-blue-600 to-blue-500"
+											: "bg-gradient-to-br from-emerald-600 to-emerald-500"
+									}`}
+								>
+									{msg.role === "user" ? (
+										<User size={18} className="text-white" />
+									) : (
+										<Bot size={18} className="text-white" />
+									)}
+								</div>
+
+								{/* Mensagem */}
+								<div
+									className={`p-4 rounded-2xl text-sm leading-relaxed shadow-lg ${
+										msg.role === "user"
+											? "bg-gradient-to-br from-blue-600 to-blue-500 text-white rounded-tr-sm"
+											: "bg-white border-2 border-slate-200 text-slate-800 rounded-tl-sm"
 									}`}
 								>
 									<p className="whitespace-pre-wrap">{msg.content}</p>
 
-									{/* --- BOTÃO DE DOWNLOAD (NOVO) --- */}
+									{/* Botão de Download do Atestado */}
 									{msg.atestadoData && (
 										<Button
 											variant="outline"
 											size="sm"
-											className="mt-3 bg-emerald-50 border-emerald-300 text-emerald-800 hover:bg-emerald-100"
+											className="mt-4 bg-gradient-to-r from-emerald-50 to-green-50 border-2 border-emerald-300 text-emerald-800 hover:from-emerald-100 hover:to-green-100 hover:border-emerald-400 font-semibold shadow-md hover:shadow-lg transition-all group"
 											onClick={() => gerarAtestadoPDF(msg.atestadoData!)}
 										>
-											<Download className="h-4 w-4 mr-2" />
+											<Download className="h-4 w-4 mr-2 group-hover:scale-110 transition-transform" />
 											Baixar Atestado (PDF)
 										</Button>
 									)}
@@ -227,13 +277,20 @@ const ChatDoctor: React.FC<ChatProps> = ({ contextoAnalise, onOpen }) => {
 							</div>
 						</div>
 					))}
+
+					{/* Loading indicator */}
 					{isLoading && (
-						<div className="flex justify-start">
-							<div className="bg-white border border-slate-200 p-3 rounded-2xl rounded-tl-none flex items-center gap-2">
-								<Loader2 className="h-4 w-4 animate-spin text-emerald-600" />
-								<span className="text-xs text-muted-foreground">
-									Digitando...
-								</span>
+						<div className="flex justify-start animate-in fade-in duration-300">
+							<div className="flex gap-3">
+								<div className="w-10 h-10 rounded-full flex items-center justify-center shrink-0 bg-gradient-to-br from-emerald-600 to-emerald-500 shadow-md">
+									<Bot size={18} className="text-white" />
+								</div>
+								<div className="bg-white border-2 border-slate-200 p-4 rounded-2xl rounded-tl-sm flex items-center gap-3 shadow-lg">
+									<Loader2 className="h-4 w-4 animate-spin text-emerald-600" />
+									<span className="text-sm text-slate-600 font-medium">
+										Analisando...
+									</span>
+								</div>
 							</div>
 						</div>
 					)}
@@ -241,22 +298,40 @@ const ChatDoctor: React.FC<ChatProps> = ({ contextoAnalise, onOpen }) => {
 				</div>
 
 				{/* Área de Input */}
-				<div className="p-4 bg-white border-t flex gap-2">
-					<Input
-						placeholder="Digite sua pergunta sobre o caso..."
-						value={inputValue}
-						onChange={(e) => setInputValue(e.target.value)}
-						onKeyDown={(e) => e.key === "Enter" && handleSend()}
-						onFocus={handleFocus}
-						className="flex-1"
-						disabled={isLoading}
-					/>
-					<Button
-						onClick={handleSend}
-						disabled={isLoading || !inputValue.trim()}
-					>
-						<Send className="h-4 w-4" />
-					</Button>
+				<div className="p-5 bg-white border-t-2 border-slate-200">
+					<div className="flex gap-3 items-end">
+						<div className="flex-1 relative">
+							<Input
+								placeholder="Digite sua pergunta sobre o caso clínico..."
+								value={inputValue}
+								onChange={(e) => setInputValue(e.target.value)}
+								onKeyDown={(e) => e.key === "Enter" && handleSend()}
+								onFocus={handleFocus}
+								disabled={isLoading}
+								className="h-12 pr-4 pl-4 rounded-xl border-2 border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all shadow-sm text-base"
+							/>
+						</div>
+						<Button
+							onClick={handleSend}
+							disabled={isLoading || !inputValue.trim()}
+							className="h-12 px-6 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 rounded-xl shadow-lg hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed group"
+						>
+							<Send className="h-5 w-5 group-hover:translate-x-0.5 transition-transform" />
+						</Button>
+					</div>
+
+					{/* Contador de caracteres e dica */}
+					<div className="flex items-center justify-between mt-3 px-1">
+						<p className="text-xs text-slate-500">
+							💡 Pressione{" "}
+							<kbd className="px-1.5 py-0.5 bg-slate-200 rounded text-xs font-semibold">
+								Enter
+							</kbd>{" "}
+						</p>
+						<span className="text-xs text-slate-400">
+							{inputValue.length} caracteres
+						</span>
+					</div>
 				</div>
 			</CardContent>
 		</Card>

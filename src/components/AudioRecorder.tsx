@@ -50,6 +50,7 @@ const AudioRecorder: React.FC<AudioRecorderProps> = ({
 						title: "Erro",
 						description: "Falha na transcrição.",
 						variant: "destructive",
+						duration: 3000,
 					});
 				}
 				stream.getTracks().forEach((t) => t.stop());
@@ -70,6 +71,7 @@ const AudioRecorder: React.FC<AudioRecorderProps> = ({
 				title: "Erro",
 				description: "Permita o uso do microfone.",
 				variant: "destructive",
+				duration: 3000,
 			});
 		}
 	}, [onRecordingComplete, toast]);

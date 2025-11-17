@@ -1,7 +1,7 @@
 import AnalysisReport from "@/components/AnalysisReport";
 import AudioRecorder from "@/components/AudioRecorder";
 import ChatDoctor from "@/components/ChatDoctor";
-import Footer from "@/components/Footer";
+import Footer from "@/components/Footer"; // Importando o Footer
 import ParticleBackground from "@/components/ParticleBackground";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -22,6 +22,7 @@ import {
 	Menu,
 	RefreshCw,
 	Sparkles,
+	Video, // 1. ÍCONE ADICIONADO (ou verificado)
 	X,
 } from "lucide-react";
 import type React from "react";
@@ -199,7 +200,7 @@ const Consulta = () => {
 					description: "Relatório gerado. Verifique abaixo.",
 					className:
 						"bg-gradient-to-r from-green-50 to-emerald-50 border-green-300",
-					duration: 7000,
+					duration: 4000,
 				});
 
 				setTimeout(() => {
@@ -218,6 +219,7 @@ const Consulta = () => {
 				description:
 					"O servidor falhou em responder após 3 tentativas. Verifique o back-end e tente novamente.",
 				variant: "destructive",
+				duration: 4000,
 			});
 			setCurrentStep(0);
 			setProgress(0);
@@ -246,6 +248,7 @@ const Consulta = () => {
 				title: "Erro ao Exportar",
 				description: "Não foi possível encontrar o componente do relatório.",
 				variant: "destructive",
+				duration: 3000,
 			});
 			return;
 		}
@@ -261,6 +264,38 @@ const Consulta = () => {
 			pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
 			pdf.save("relatorio-medico-copilot.pdf");
 		});
+	};
+
+	// 2. FUNÇÃO ATUALIZADA (LÓGICA DE COPIAR LINK)
+	const handleStartVideoCall = () => {
+		const roomName = `MedCopilot-${crypto.randomUUID().substring(0, 8)}`;
+		// Gera o link completo usando a URL base do site atual
+		const inviteLink = `${window.location.origin}/teleconsulta/${roomName}`;
+
+		// Tenta copiar o link para o clipboard
+		navigator.clipboard
+			.writeText(inviteLink)
+			.then(() => {
+				toast({
+					title: "✅ Link de Convite Copiado!",
+					description:
+						"O link da teleconsulta está na sua área de transferência. Entre na sala e envie o link para o paciente.",
+					duration: 3000,
+				});
+			})
+			.catch((err) => {
+				console.error("Falha ao copiar link: ", err);
+				toast({
+					title: "Erro ao copiar link",
+					description:
+						"Não foi possível copiar o link. Você pode copiá-lo da URL do navegador.",
+					variant: "destructive",
+					duration: 3000,
+				});
+			});
+
+		// Navega o médico para a sala
+		navigate(`/teleconsulta/${roomName}`);
 	};
 
 	return (
@@ -479,6 +514,8 @@ const Consulta = () => {
 										</CardTitle>
 									</CardHeader>
 									<CardContent className="space-y-2 sm:space-y-3 p-4 sm:p-6">
+										{/* 3. BOTÃO REMOVIDO DESTA ÁREA */}
+
 										<Button
 											onClick={handleNovaConsulta}
 											className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg shadow-blue-500/20 hover:shadow-xl hover:scale-105 transition-all duration-300 rounded-xl h-10 sm:h-12 font-medium text-sm sm:text-base"
@@ -522,7 +559,7 @@ const Consulta = () => {
 												<CheckCircle className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-green-400" />
 											</div>
 											<span className="text-xs sm:text-sm text-slate-300 leading-relaxed">
-												Grave em ambiente silencioso
+												Clique para começar ou encerrar a gravação
 											</span>
 										</li>
 										<li className="flex items-start gap-2 sm:gap-3 group">
@@ -541,6 +578,14 @@ const Consulta = () => {
 												Use o chat para gerar atestados
 											</span>
 										</li>
+										<li className="flex items-start gap-2 sm:gap-3 group">
+											<div className="h-5 w-5 sm:h-6 sm:w-6 rounded-lg bg-green-500/10 flex items-center justify-center mt-0.5 group-hover:bg-green-500/20 transition-colors flex-shrink-0">
+												<CheckCircle className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-green-400" />
+											</div>
+											<span className="text-xs sm:text-sm text-slate-300 leading-relaxed">
+												Grave em ambiente silencioso
+											</span>
+										</li>
 									</ul>
 								</CardContent>
 							</Card>
@@ -551,15 +596,21 @@ const Consulta = () => {
 				<Footer />
 			</div>
 
-			<style jsx>{`
-				@keyframes shimmer {
-					0% { transform: translateX(-100%); }
-					100% { transform: translateX(100%); }
-				}
-				.animate-shimmer {
-					animation: shimmer 2s infinite;
-				}
-			`}</style>
+			{/* 4. BOTÃO FLUTUANTE ADICIONADO */}
+			<Button
+				onClick={handleStartVideoCall}
+				className="
+          group fixed z-50 bottom-6 right-6 sm:bottom-10 sm:right-10
+          w-16 h-16 sm:w-20 sm:h-20
+          bg-gradient-to-r from-green-500 to-emerald-600 text-white
+          rounded-full shadow-2xl shadow-black/40
+          hover:shadow-green-500/30 hover:scale-110
+          transition-all duration-300 ease-in-out
+        "
+			>
+				<span className="sr-only">Iniciar Teleconsulta</span>
+				<Video className="h-7 w-7 sm:h-9 sm:w-9 transition-transform duration-300 group-hover:scale-110" />
+			</Button>
 		</div>
 	);
 };
