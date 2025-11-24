@@ -1,4 +1,8 @@
-import jsPDF from "jspdf";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { enviarMensagemChatService } from "@/services/api"; // Ajuste no import path
+import { type AtestadoData, gerarAtestadoPDF } from "@/utils/pdf"; // Importando do novo utilitário
 import {
 	Bot,
 	Download,
@@ -10,10 +14,6 @@ import {
 	User,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import { enviarMensagemChatService } from "../services/api";
-import { Button } from "./ui/button";
-import { Card, CardContent, CardHeader } from "./ui/card";
-import { Input } from "./ui/input";
 
 interface ChatProps {
 	contextoAnalise: any;
@@ -26,55 +26,6 @@ interface Message {
 	atestadoData?: AtestadoData;
 }
 
-interface AtestadoData {
-	tipo: "ATESTADO";
-	nomePaciente: string;
-	diasAfastamento: string;
-	dataInicio: string;
-	cid: string;
-	nomeMedico: string;
-	crm: string;
-}
-
-// --- FUNÇÃO DE GERAR PDF ---
-const gerarAtestadoPDF = (data: AtestadoData) => {
-	const doc = new jsPDF();
-
-	// Cabeçalho
-	doc.setFontSize(22);
-	doc.setFont("helvetica", "bold");
-	doc.text("ATESTADO MÉDICO", 105, 30, { align: "center" });
-
-	// Corpo do Atestado
-	doc.setFontSize(12);
-	doc.setFont("helvetica", "normal");
-
-	const textoCorpo = `Atesto para os devidos fins que o(a) Sr(a) ${data.nomePaciente} necessita de ${data.diasAfastamento} de afastamento de suas atividades laborais, a partir de ${data.dataInicio}, por motivos de doença.`;
-
-	const splitText = doc.splitTextToSize(textoCorpo, 170);
-	doc.text(splitText, 20, 50);
-
-	if (data.cid) {
-		doc.text(`CID: ${data.cid}`, 20, 70);
-	}
-
-	const dataAtual = new Date().toLocaleDateString("pt-BR", {
-		day: "2-digit",
-		month: "long",
-		year: "numeric",
-	});
-	doc.text(`Duque de Caxias, ${dataAtual}.`, 105, 100, { align: "center" });
-
-	doc.text("___________________________________", 105, 120, {
-		align: "center",
-	});
-	doc.text(data.nomeMedico, 105, 125, { align: "center" });
-	doc.text(data.crm, 105, 130, { align: "center" });
-
-	doc.save("atestado_medico.pdf");
-};
-
-// --- COMPONENTE DO CHAT ---
 const ChatDoctor: React.FC<ChatProps> = ({ contextoAnalise, onOpen }) => {
 	const [messages, setMessages] = useState<Message[]>([]);
 	const [inputValue, setInputValue] = useState("");
@@ -109,6 +60,7 @@ const ChatDoctor: React.FC<ChatProps> = ({ contextoAnalise, onOpen }) => {
 			let atestadoData: AtestadoData | undefined = undefined;
 
 			try {
+				// Tenta encontrar um JSON na resposta para atestado
 				const jsonMatch = data.resposta.match(/\{[\s\S]*\}/);
 
 				if (jsonMatch) {
@@ -118,14 +70,11 @@ const ChatDoctor: React.FC<ChatProps> = ({ contextoAnalise, onOpen }) => {
 						iaMsgContent =
 							"Gerei o atestado solicitado. Clique no botão abaixo para fazer o download.";
 						atestadoData = parsedJson;
-					} else {
-						iaMsgContent = data.resposta;
 					}
-				} else {
-					iaMsgContent = data.resposta;
 				}
 			} catch (e) {
-				iaMsgContent = data.resposta;
+				// Se falhar o parse, mantém o texto original
+				console.log("Não foi possível fazer parse de JSON na resposta");
 			}
 
 			setMessages((prev) => [
@@ -160,7 +109,6 @@ const ChatDoctor: React.FC<ChatProps> = ({ contextoAnalise, onOpen }) => {
 		<Card className="w-full max-w-5xl mx-auto mt-8 border-2 border-slate-200 shadow-2xl overflow-hidden animate-in fade-in slide-in-from-bottom-8 duration-1000">
 			{/* Header Premium */}
 			<CardHeader className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 relative overflow-hidden p-0">
-				{/* Pattern de fundo */}
 				<div className="absolute inset-0 opacity-5">
 					<div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff_1px,transparent_1px),linear-gradient(to_bottom,#ffffff_1px,transparent_1px)] bg-[size:24px_24px]" />
 				</div>
@@ -216,11 +164,7 @@ const ChatDoctor: React.FC<ChatProps> = ({ contextoAnalise, onOpen }) => {
 										</div>
 										<div className="bg-white p-3 rounded-lg border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
 											<Bot className="h-4 w-4 inline mr-2 text-indigo-600" />
-											"Qual a posologia infantil para o medicamento?"
-										</div>
-										<div className="bg-white p-3 rounded-lg border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
-											<Sparkles className="h-4 w-4 inline mr-2 text-purple-600" />
-											"Explique o diagnóstico de forma simplificada"
+											"Qual a posologia infantil?"
 										</div>
 									</div>
 								</div>
@@ -236,7 +180,6 @@ const ChatDoctor: React.FC<ChatProps> = ({ contextoAnalise, onOpen }) => {
 							<div
 								className={`flex max-w-[85%] gap-3 ${msg.role === "user" ? "flex-row-reverse" : "flex-row"}`}
 							>
-								{/* Avatar */}
 								<div
 									className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 shadow-md ${
 										msg.role === "user"
@@ -251,7 +194,6 @@ const ChatDoctor: React.FC<ChatProps> = ({ contextoAnalise, onOpen }) => {
 									)}
 								</div>
 
-								{/* Mensagem */}
 								<div
 									className={`p-4 rounded-2xl text-sm leading-relaxed shadow-lg ${
 										msg.role === "user"
@@ -278,7 +220,6 @@ const ChatDoctor: React.FC<ChatProps> = ({ contextoAnalise, onOpen }) => {
 						</div>
 					))}
 
-					{/* Loading indicator */}
 					{isLoading && (
 						<div className="flex justify-start animate-in fade-in duration-300">
 							<div className="flex gap-3">
@@ -318,19 +259,6 @@ const ChatDoctor: React.FC<ChatProps> = ({ contextoAnalise, onOpen }) => {
 						>
 							<Send className="h-5 w-5 group-hover:translate-x-0.5 transition-transform" />
 						</Button>
-					</div>
-
-					{/* Contador de caracteres e dica */}
-					<div className="flex items-center justify-between mt-3 px-1">
-						<p className="text-xs text-slate-500">
-							💡 Pressione{" "}
-							<kbd className="px-1.5 py-0.5 bg-slate-200 rounded text-xs font-semibold">
-								Enter
-							</kbd>{" "}
-						</p>
-						<span className="text-xs text-slate-400">
-							{inputValue.length} caracteres
-						</span>
 					</div>
 				</div>
 			</CardContent>
