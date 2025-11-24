@@ -1,5 +1,4 @@
 # 🩺 Médico Copilot
-
 **Assistente Clínico Inteligente com IA**
 
 Um sistema completo para otimização de consultas médicas com transcrição em tempo real, análise clínica automatizada e gestão de relatórios.
@@ -32,12 +31,13 @@ O **Médico Copilot** é uma plataforma de assistência clínica que utiliza Int
 
 ### 🎁 Diferenciais
 
-- **⚡ Tempo Real**: Transcrição instantânea durante a consulta
-- **🤖 IA Contextual**: Chat pós-consulta com memória do atendimento
-- **📄 Automação**: Geração automática de atestados e relatórios em PDF
-- **📊 Dashboard Completo**: Histórico com busca avançada e filtros inteligentes
-- **🎨 UX Moderna**: Interface tech com animações e design responsivo
-- **🔒 Segurança**: Dados sensíveis tratados com privacidade
+- ⚡ **Tempo Real**: Transcrição instantânea durante a consulta
+- 🤖 **IA Contextual**: Chat pós-consulta com memória do atendimento
+- 📄 **Automação**: Geração automática de atestados e relatórios em PDF
+- 📹 **Telemedicina**: Suporte integrado para videochamadas seguras
+- 📊 **Dashboard Completo**: Histórico com busca avançada e filtros inteligentes
+- 🎨 **UX Moderna**: Interface tech com animações e design responsivo
+- 🔒 **Segurança**: Dados sensíveis tratados com privacidade
 
 ---
 
@@ -47,18 +47,20 @@ O **Médico Copilot** é uma plataforma de assistência clínica que utiliza Int
 
 | Funcionalidade | Descrição |
 |----------------|-----------|
-| 🎙️ **Transcrição em Tempo Real** | Gravação de áudio (WebM) com transcrição via Google Gemini |
+| 🎙️ **Transcrição em Tempo Real** | Gravação de áudio (WebM) gerenciada por Custom Hooks e transcrição via Google Gemini |
 | 🧠 **Análise Clínica por IA** | Geração automática de diagnóstico, exames recomendados e medicamentos |
+| 📹 **Teleconsulta** | Videochamadas integradas via Jitsi Meet |
 | 💬 **Chat Contextual** | Interação pós-consulta para refinar informações ou solicitar documentos |
-| 📑 **Geração de PDF** | Atestados e relatórios profissionais com um comando |
-| 📊 **Dashboard Inteligente** | Grid de histórico com filtros por prioridade, data e busca textual |
+| 📑 **Geração de PDF** | Atestados e relatórios profissionais gerados via utilitários dedicados (utils/pdf.ts) |
+| 📊 **Dashboard Inteligente** | Grid de histórico com filtros instantâneos por prioridade, data e busca textual |
 | 🗑️ **Gestão de Relatórios** | Exclusão, exportação em TXT e PDF via jsPDF |
 | 🔔 **Notificações** | Toast system para feedback em tempo real |
-| 🎨 **UI Animada** | Fundo com partículas animadas (react-tsparticles) |
+| 🎨 **UI Animada** | Layout imersivo com partículas animadas (react-tsparticles) |
 
 ### Priorização Automática
 
 O sistema classifica consultas em três níveis:
+
 - 🔴 **Alta**: Casos urgentes que requerem atenção imediata
 - 🟡 **Média**: Situações que necessitam acompanhamento
 - 🟢 **Baixa**: Consultas de rotina
@@ -66,12 +68,11 @@ O sistema classifica consultas em três níveis:
 ---
 
 ## 🎬 Demonstração
-
 ```bash
 # Exemplo de fluxo de uso
-1. Médico inicia gravação durante consulta
-2. IA transcreve em tempo real
-3. Sistema analisa e sugere diagnóstico + exames
+1. Médico inicia gravação durante consulta (presencial ou remota)
+2. IA transcreve em tempo real (Controlado pelo hook useAudioRecorder)
+3. Sistema analisa e sugere diagnóstico + exames (Com Retry automático na API)
 4. Médico revisa e ajusta via chat contextual
 5. Gera atestado em PDF com um comando
 6. Relatório salvo automaticamente no histórico
@@ -80,7 +81,6 @@ O sistema classifica consultas em três níveis:
 ---
 
 ## 🏗️ Arquitetura
-
 ```
 ┌─────────────────────────────────────────────────────────┐
 │                   MÉDICO COPILOT                        │
@@ -92,12 +92,12 @@ O sistema classifica consultas em três níveis:
 │  │  React + Vite    │         │  Node + Express  │    │
 │  │  TypeScript      │         │  JavaScript      │    │
 │  │  Shadcn UI       │         │  Prisma ORM      │    │
-│  └──────────────────┘         └────────┬─────────┘    │
-│                                         │              │
-│                                ┌────────▼─────────┐    │
-│                                │   PostgreSQL     │    │
-│                                │   (ou SQLite)    │    │
-│                                └──────────────────┘    │
+│  └────────┬─────────┘         └────────┬─────────┘    │
+│           │                            │              │
+│  ┌────────▼─────────┐          ┌───────▼─────────┐    │
+│  │   Jitsi Meet     │          │   PostgreSQL    │    │
+│  │ (Vídeo Iframe)   │          │   (ou SQLite)   │    │
+│  └──────────────────┘          └─────────────────┘    │
 │                                                         │
 │                                ┌──────────────────┐    │
 │                                │  Google Gemini   │    │
@@ -106,31 +106,32 @@ O sistema classifica consultas em três níveis:
 └─────────────────────────────────────────────────────────┘
 ```
 
-O projeto segue uma arquitetura de **microsserviços desacoplados**, com dois repositórios independentes:
+O projeto segue uma arquitetura de microsserviços desacoplados, com dois repositórios independentes:
 
-- **`medico-frontend`**: Interface do usuário (SPA)
-- **`medico-api`**: Backend e lógica de negócio
+- **medico-frontend**: Interface do usuário (SPA) refatorada com Feature-Based Architecture.
+- **medico-api**: Backend e lógica de negócio.
 
 ---
 
 ## 🛠️ Stack Tecnológica
 
-### Frontend ([medico-frontend](https://github.com/seu-usuario/medico-frontend))
+### Frontend (medico-frontend)
 
 | Tecnologia | Versão | Propósito |
 |------------|--------|-----------|
 | React | 18.x | Library UI |
 | Vite | 5.x | Build tool & Dev server |
-| TypeScript | 5.x | Type safety |
+| TypeScript | 5.x | Type safety e Interfaces centralizadas |
 | Tailwind CSS | 3.x | Styling |
-| Shadcn UI | Latest | Component library |
-| React Router | 6.x | Navegação |
-| jsPDF | 2.x | Geração de PDF |
+| Shadcn UI | Latest | Component library (Design System) |
+| React Router | 6.x | Navegação com Layout Pattern |
+| jsPDF | 2.x | Geração de PDF (Service Utility) |
 | html2canvas | 1.x | Screenshot para PDF |
+| Jitsi React SDK | 1.x | Videoconferência |
 | React TSParticles | 2.x | Animações de fundo |
 | Lucide React | Latest | Ícones |
 
-### Backend ([medico-api](https://github.com/seu-usuario/medico-api))
+### Backend (medico-api)
 
 | Tecnologia | Versão | Propósito |
 |------------|--------|-----------|
@@ -140,7 +141,7 @@ O projeto segue uma arquitetura de **microsserviços desacoplados**, com dois re
 | PostgreSQL | 14+ | Banco de dados (prod) |
 | SQLite | 3.x | Banco de dados (dev) |
 | Google Gemini API | Latest | IA Generativa |
-| Multer | 1.x | Upload de arquivos |
+| Multer | 1.x | Upload de arquivo |
 | dotenv | 16.x | Variáveis de ambiente |
 | CORS | 2.x | Cross-origin requests |
 
@@ -153,15 +154,14 @@ Antes de começar, certifique-se de ter instalado:
 - **Node.js** 18.x ou superior ([Download](https://nodejs.org/))
 - **npm** ou **yarn**
 - **Git** ([Download](https://git-scm.com/))
-- **Conta Google AI Studio** para obter API Key do Gemini ([Acesse aqui](https://makersuite.google.com/app/apikey))
-- **PostgreSQL** (para produção) ou use SQLite (para dev local)
+- Conta **Google AI Studio** para obter API Key do Gemini ([Acesse aqui](https://makersuite.google.com/app/apikey))
+- **PostgreSQL** (para produção) ou use **SQLite** (para dev local)
 
 ---
 
 ## 🚀 Instalação
 
 ### 1️⃣ Clone os Repositórios
-
 ```bash
 # Clone o backend
 git clone https://github.com/seu-usuario/medico-api.git
@@ -174,13 +174,13 @@ cd medico-frontend
 
 ### 2️⃣ Instale as Dependências
 
-#### Backend
+**Backend**
 ```bash
 cd medico-api
 npm install
 ```
 
-#### Frontend
+**Frontend**
 ```bash
 cd medico-frontend
 npm install
@@ -193,7 +193,6 @@ npm install
 ### Backend (.env)
 
 Crie um arquivo `.env` na raiz de `medico-api`:
-
 ```env
 # Database
 # Para desenvolvimento local com SQLite:
@@ -213,13 +212,11 @@ NODE_ENV=development
 ### Frontend (Opcional)
 
 Se necessário, crie `.env` em `medico-frontend`:
-
 ```env
 VITE_API_URL=http://localhost:3000
 ```
 
 ### Configuração do Banco de Dados
-
 ```bash
 cd medico-api
 
@@ -238,7 +235,6 @@ npx prisma studio
 ## 🎮 Uso
 
 ### Iniciar Backend
-
 ```bash
 cd medico-api
 npm run dev
@@ -246,7 +242,6 @@ npm run dev
 ```
 
 ### Iniciar Frontend
-
 ```bash
 cd medico-frontend
 npm run dev
@@ -255,14 +250,21 @@ npm run dev
 
 ### Fluxo de Uso Típico
 
-1. **Acesse a aplicação** em `http://localhost:8080`
-2. **Página de Consulta** (`/`):
+1. Acesse a aplicação em `http://localhost:8080`
+
+2. **Página de Consulta (/):**
    - Clique em "Iniciar Gravação"
    - Fale sobre a consulta
    - Pare a gravação
    - Aguarde transcrição e análise automática
    - Use o chat para refinar ou solicitar atestado
-3. **Dashboard** (`/historico`):
+
+3. **Teleconsulta:**
+   - Clique no botão flutuante de vídeo
+   - Copie o link da sala e envie ao paciente
+   - Realize a consulta remota
+
+4. **Dashboard (/historico):**
    - Visualize todas as consultas
    - Filtre por prioridade ou busque por texto
    - Exporte relatórios em PDF ou TXT
@@ -273,41 +275,45 @@ npm run dev
 ## 📁 Estrutura do Projeto
 
 ### Backend (medico-api)
-
 ```
 medico-api/
-├── prisma/
-│   ├── schema.prisma          # Schema do banco de dados
-│   └── migrations/            # Histórico de migrações
-├── uploads/                   # Arquivos de áudio temporários
-├── server.js                  # Ponto de entrada
-├── .env                       # Variáveis de ambiente
+├── src/
+│   ├── controllers/        # Lógica das rotas
+│   ├── db/                 # Configuração do Prisma e Schema
+│   ├── middlewares/        # Tratamento de erros
+│   ├── routes/             # Definição de endpoints
+│   ├── services/           # Integrações (Gemini, etc)
+│   └── server.js           # Ponto de entrada
 ├── package.json
 └── README.md
 ```
 
-### Frontend (medico-frontend)
+### Frontend (medico-frontend) - Refatorado
 
+A estrutura segue padrões de arquitetura modular (Feature-based) e separação de conceitos (SoC).
 ```
 medico-frontend/
 ├── src/
 │   ├── components/
-│   │   ├── ui/               # Componentes Shadcn
-│   │   ├── ParticlesBackground.tsx
+│   │   ├── common/           # Componentes globais (Header, Footer)
+│   │   ├── features/         # Componentes de negócio (Consulta, Histórico)
+│   │   │   ├── consulta/     # Ex: StepIndicator
+│   │   │   └── historico/    # Ex: ConsultaCard
+│   │   ├── ui/               # Design System (Shadcn UI)
 │   │   └── ...
-│   ├── pages/
-│   │   ├── Consulta.tsx      # Página principal
-│   │   └── Historico.tsx     # Dashboard
-│   ├── services/
-│   │   └── api.ts            # Cliente HTTP
-│   ├── App.tsx               # Router
-│   ├── main.tsx              # Entry point
-│   └── index.css             # Estilos globais
+│   ├── hooks/                # Custom Hooks (ex: useAudioRecorder)
+│   ├── layouts/              # Layouts de página (DefaultLayout)
+│   ├── pages/                # Orquestração das rotas
+│   │   ├── Consulta.tsx
+│   │   ├── Historico.tsx
+│   │   └── ...
+│   ├── services/             # Camada de API e Regras de Negócio (Retry logic)
+│   ├── types/                # Definições de Tipos Globais e Interfaces
+│   ├── utils/                # Funções puras (ex: gerador PDF)
+│   ├── App.tsx               # Configuração de Rotas
+│   └── main.tsx              # Entry point
 ├── public/
 ├── .env
-├── package.json
-├── tailwind.config.js
-├── tsconfig.json
 └── vite.config.ts
 ```
 
@@ -317,63 +323,11 @@ medico-frontend/
 
 | Método | Endpoint | Descrição |
 |--------|----------|-----------|
-| `POST` | `/transcrever` | Recebe áudio e retorna transcrição |
-| `POST` | `/analisar` | Analisa transcrição e gera diagnóstico estruturado |
-| `POST` | `/chat` | Chat contextual pós-consulta |
-| `GET` | `/relatorios` | Lista todos os relatórios |
-| `DELETE` | `/relatorios/:id` | Deleta um relatório específico |
-
-### Exemplo de Request
-
-```javascript
-// POST /transcrever
-const formData = new FormData();
-formData.append('audio', audioBlob, 'consulta.webm');
-
-const response = await fetch('http://localhost:3000/transcrever', {
-  method: 'POST',
-  body: formData
-});
-
-const data = await response.json();
-// { transcricao: "Paciente relata dor de cabeça..." }
-```
-
----
-
-## 🌐 Deploy
-
-### Backend (Render / Railway / Fly.io)
-
-```bash
-# 1. Configure DATABASE_URL no painel do provedor
-# 2. Adicione GEMINI_API_KEY
-# 3. Deploy via Git
-git push render main
-```
-
-### Frontend (Vercel / Netlify)
-
-```bash
-# 1. Configure VITE_API_URL apontando para seu backend
-# 2. Build e deploy
-npm run build
-vercel --prod
-```
-
-### Docker (Opcional)
-
-```dockerfile
-# Backend Dockerfile exemplo
-FROM node:18-alpine
-WORKDIR /app
-COPY package*.json ./
-RUN npm ci --only=production
-COPY . .
-RUN npx prisma generate
-EXPOSE 3000
-CMD ["node", "server.js"]
-```
+| POST | `/api/consulta/transcrever` | Recebe áudio e retorna transcrição |
+| POST | `/api/consulta/analisar` | Analisa transcrição e gera diagnóstico estruturado |
+| POST | `/api/consulta/chat` | Chat contextual pós-consulta |
+| GET | `/api/consulta/historico` | Lista todos os relatórios |
+| DELETE | `/api/consulta/:id` | Deleta um relatório específico |
 
 ---
 
@@ -382,9 +336,7 @@ CMD ["node", "server.js"]
 - [ ] Autenticação de usuários (JWT)
 - [ ] Suporte a múltiplos idiomas
 - [ ] Integração com prontuários eletrônicos (PEP)
-- [ ] App mobile (React Native)
-- [ ] Transcrição em tempo real durante gravação
-- [ ] Análise de sentimentos do paciente
+- [ ] Transcrição em tempo real durante gravação (Streaming)
 - [ ] Dashboard de analytics médicos
 - [ ] Modo offline com sincronização
 - [ ] Assinatura digital de documentos
@@ -412,24 +364,31 @@ Contribuições são sempre bem-vindas!
 
 ## 📄 Licença
 
-Este projeto está sob a licença MIT. Veja o arquivo [LICENSE](LICENSE) para mais detalhes.
+Este projeto está sob a licença MIT. Veja o arquivo `LICENSE` para mais detalhes.
 
 ---
 
 ## 👨‍💻 Autor
 
-Desenvolvido com ❤️ por [Seu Nome](https://github.com/seu-usuario)
+Desenvolvido com ❤️ por **Gabriel Codes**
+
+### 🔗 Conecte-se comigo
+
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white)](https://linkedin.com/in/gabriel-alexandre-silva/)
+[![GitHub](https://img.shields.io/badge/GitHub-100000?style=for-the-badge&logo=github&logoColor=white)](https://github.com/GabrielDevelop777)
+[![Portfolio](https://img.shields.io/badge/Portfolio-FF5722?style=for-the-badge&logo=google-chrome&logoColor=white)](https://gabrielalexandre.vercel.app/)
+[![Email](https://img.shields.io/badge/Email-D14836?style=for-the-badge&logo=gmail&logoColor=white)](mailto:gabrielalexok@gmail.com)
 
 ---
 
 ## 📞 Suporte
 
 - 📧 Email: seuemail@exemplo.com
-- 🐛 Issues: [GitHub Issues](https://github.com/seu-usuario/medico-copilot/issues)
-- 💬 Discussões: [GitHub Discussions](https://github.com/seu-usuario/medico-copilot/discussions)
+- 🐛 Issues: [GitHub Issues](https://github.com/GabrielDevelop777/medico-copilot/issues)
+- 💬 Discussões: [GitHub Discussions](https://github.com/GabrielDevelop777/medico-copilot/discussions)
 
 ---
 
 **Feito para médicos que querem mais tempo para cuidar de pacientes** 🩺
 
-⭐ Se este projeto te ajudou, considere dar uma estrela!
+⭐
