@@ -6,11 +6,14 @@ import {
 	Loader2,
 	Search,
 } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
+import ParticleBackground from "@/components/ParticleBackground";
+import Header from "@/components/common/Header";
+// Componentes UI e Comuns
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import {
 	Dialog,
 	DialogClose,
@@ -29,8 +32,10 @@ import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 
 import AnalysisReport from "@/components/AnalysisReport";
+// Componentes de Feature
 import ConsultaCard from "@/components/features/historico/ConsultaCard";
 
+// Serviços e Tipos
 import { API_URL, deleteConsultaService } from "@/services/api";
 import type { ConsultaHistorico } from "@/types";
 
@@ -41,19 +46,23 @@ const Historico = () => {
 	const navigate = useNavigate();
 	const { toast } = useToast();
 
+	// Estados
 	const [consultas, setConsultas] = useState<ConsultaHistorico[]>([]);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
 
+	// Estados dos Filtros
 	const [searchTerm, setSearchTerm] = useState("");
 	const [filtroPrioridade, setFiltroPrioridade] =
 		useState<FiltroPrioridade>("todas");
 	const [filtroData, setFiltroData] = useState<FiltroData>("recentes");
 
+	// Estados do Modal
 	const [selectedConsulta, setSelectedConsulta] =
 		useState<ConsultaHistorico | null>(null);
 	const [isModalOpen, setIsModalOpen] = useState(false);
 
+	// Busca inicial dos dados
 	const fetchHistorico = async () => {
 		setLoading(true);
 		try {
@@ -73,6 +82,7 @@ const Historico = () => {
 		fetchHistorico();
 	}, []);
 
+	// Lógica de Filtragem
 	const consultasFiltradas = useMemo(() => {
 		let items = [...consultas];
 
@@ -88,6 +98,7 @@ const Historico = () => {
 						c.analise.diagnosticoSugerido
 							.toLowerCase()
 							.includes(searchTerm.toLowerCase())),
+			);
 		}
 
 		if (filtroData === "antigas") {
@@ -103,6 +114,7 @@ const Historico = () => {
 		return items;
 	}, [consultas, searchTerm, filtroPrioridade, filtroData]);
 
+	// Ações
 	const handleOpenModal = (consulta: ConsultaHistorico) => {
 		setSelectedConsulta(consulta);
 		setIsModalOpen(true);
@@ -152,9 +164,10 @@ const Historico = () => {
 		toast({ title: "Relatório exportado!", description: "Download iniciado." });
 	};
 
+	// Renderização
 	if (loading) {
 		return (
-			<div className="flex justify-center items-center h-full min-h-[60vh]">
+			<div className="flex justify-center items-center h-screen bg-slate-950">
 				<Loader2 className="h-16 w-16 animate-spin text-blue-400" />
 			</div>
 		);
@@ -162,7 +175,7 @@ const Historico = () => {
 
 	if (error) {
 		return (
-			<div className="flex justify-center items-center h-full min-h-[60vh] flex-col gap-6">
+			<div className="flex justify-center items-center h-screen flex-col gap-6 bg-slate-950">
 				<AlertTriangle className="h-20 w-20 text-red-400" />
 				<p className="text-red-200">{error}</p>
 				<Button onClick={() => navigate("/")}>Voltar</Button>
