@@ -82,3 +82,28 @@ export const deleteConsultaService = async (id: string) => {
 
 	return response.json();
 };
+
+// Função helper de espera
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+// Nova função de serviço com retry automático
+export const analisarConsultaComRetry = async (
+	transcricao: string,
+	maxTentativas = 3,
+	onRetry?: (tentativa: number) => void,
+): Promise<AnaliseResponse> => {
+	let tentativa = 1;
+	while (tentativa <= maxTentativas) {
+		try {
+			return await analisarConsultaService(transcricao);
+		} catch (error) {
+			console.error(`Erro na tentativa ${tentativa}:`, error);
+			if (tentativa === maxTentativas) throw error;
+
+			if (onRetry) onRetry(tentativa);
+			await sleep(2000);
+			tentativa++;
+		}
+	}
+	throw new Error("Falha após todas as tentativas");
+};

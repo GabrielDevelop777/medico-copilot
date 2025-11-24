@@ -1,9 +1,7 @@
 import { Button } from "@/components/ui/button";
-import { useToast } from "@/hooks/use-toast";
-import { transcreverAudioService } from "@/services/api";
+import { useAudioRecorder } from "@/hooks/useAudioRecorder"; // Importe o novo hook
 import { Activity, Lightbulb, Loader2, Mic, Square } from "lucide-react";
 import type React from "react";
-import { useCallback, useRef, useState } from "react";
 
 interface AudioRecorderProps {
 	onRecordingComplete: (audioBlob: Blob, transcricao: string) => void;
@@ -14,81 +12,14 @@ const AudioRecorder: React.FC<AudioRecorderProps> = ({
 	onRecordingComplete,
 	isProcessing,
 }) => {
-	const [isRecording, setIsRecording] = useState(false);
-	const mediaRecorderRef = useRef<MediaRecorder | null>(null);
-	const chunksRef = useRef<Blob[]>([]);
-	const { toast } = useToast();
-
-	const startRecording = useCallback(async () => {
-		try {
-			const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-			const mediaRecorder = new MediaRecorder(stream, {
-				mimeType: "audio/webm;codecs=opus",
-			});
-
-			chunksRef.current = [];
-			mediaRecorder.ondataavailable = (e) =>
-				e.data.size > 0 && chunksRef.current.push(e.data);
-
-			mediaRecorder.onstop = async () => {
-				const audioBlob = new Blob(chunksRef.current, { type: "audio/webm" });
-
-				// Notificação de Processamento
-				toast({
-					title: "⏳ Processando áudio...",
-					description: "Aguarde enquanto geramos a inteligência clínica.",
-					duration: 4000,
-				});
-
-				try {
-					const data = await transcreverAudioService(audioBlob);
-					if (data?.transcricao)
-						onRecordingComplete(audioBlob, data.transcricao);
-				} catch (error) {
-					console.error(error);
-					toast({
-						title: "Erro",
-						description: "Falha na transcrição.",
-						variant: "destructive",
-						duration: 3000,
-					});
-				}
-				stream.getTracks().forEach((t) => t.stop());
-			};
-
-			mediaRecorder.start(1000);
-			mediaRecorderRef.current = mediaRecorder;
-			setIsRecording(true);
-
-			// Notificação de Início
-			toast({
-				title: "🎙️ Gravação Iniciada",
-				description: "Fale normalmente durante a consulta.",
-				className: "bg-blue-50 border-blue-200 text-blue-800",
-			});
-		} catch (error) {
-			toast({
-				title: "Erro",
-				description: "Permita o uso do microfone.",
-				variant: "destructive",
-				duration: 3000,
-			});
-		}
-	}, [onRecordingComplete, toast]);
-
-	const stopRecording = () => {
-		if (mediaRecorderRef.current?.state !== "inactive") {
-			mediaRecorderRef.current?.stop();
-			setIsRecording(false);
-		}
-	};
+	// Toda a lógica complexa foi substituída por essa linha simples:
+	const { isRecording, startRecording, stopRecording } =
+		useAudioRecorder(onRecordingComplete);
 
 	return (
 		<div className="flex flex-col items-center justify-center py-10 w-full">
 			{/* 1. Área do Botão */}
 			<div className="relative mb-6">
-				{" "}
-				{/* Margem inferior para separar do texto */}
 				<Button
 					onClick={isRecording ? stopRecording : startRecording}
 					disabled={isProcessing}
@@ -111,10 +42,12 @@ const AudioRecorder: React.FC<AudioRecorderProps> = ({
 				</Button>
 			</div>
 
-			{/* 2. Texto de Status (AGORA NO FLUXO NORMAL) */}
+			{/* 2. Texto de Status */}
 			<div className="w-64 text-center h-16 flex flex-col items-center justify-start gap-2">
 				<p
-					className={`text-lg font-medium transition-colors duration-300 ${isRecording ? "text-destructive" : "text-muted-foreground"}`}
+					className={`text-lg font-medium transition-colors duration-300 ${
+						isRecording ? "text-destructive" : "text-muted-foreground"
+					}`}
 				>
 					{isProcessing
 						? "Processando inteligência..."
