@@ -3,7 +3,6 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { JitsiMeeting } from "@jitsi/react-sdk";
 import { Calendar, Clock, Copy, Loader2, PhoneOff, Video } from "lucide-react";
-import React from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
 const Teleconsulta = () => {
