@@ -13,7 +13,7 @@ import ParticleBackground from "@/components/ParticleBackground";
 import Header from "@/components/common/Header";
 // Componentes UI e Comuns
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import {
 	Dialog,
 	DialogClose,
