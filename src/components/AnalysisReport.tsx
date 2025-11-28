@@ -7,7 +7,6 @@ import {
 	Pill,
 	Stethoscope,
 } from "lucide-react";
-import React from "react";
 
 interface Analise {
 	diagnosticoSugerido: string;
@@ -190,7 +189,11 @@ const AnalysisReport = ({ analise }: { analise: Analise }) => {
 
 					{/* Footer com aviso legal */}
 					<div className="pt-6 border-t-2 border-slate-200">
-						<p className="text-xs text-slate-500 text-center leading-relaxed"></p>
+						<p className="text-xs text-slate-500 text-center leading-relaxed">
+							Este relatório é gerado por inteligência artificial e serve como
+							apoio ao diagnóstico médico, não substituindo a avaliação e
+							decisão de um profissional de saúde qualificado.
+						</p>
 					</div>
 				</CardContent>
 			</Card>
