@@ -94,10 +94,9 @@ const Historico = () => {
 			items = items.filter(
 				(c) =>
 					c.transcricao.toLowerCase().includes(searchTerm.toLowerCase()) ||
-					(c.analise.diagnosticoSugerido &&
-						c.analise.diagnosticoSugerido
-							.toLowerCase()
-							.includes(searchTerm.toLowerCase())),
+					c.analise?.diagnosticoSugerido
+						?.toLowerCase()
+						.includes(searchTerm.toLowerCase()),
 			);
 		}
 
@@ -216,7 +215,7 @@ const Historico = () => {
 								onChange={(e) => setSearchTerm(e.target.value)}
 							/>
 						</div>
-						<div className="flex gap-3">
+						<div className="flex flex-col md:flex-row gap-2">
 							<DropdownMenu>
 								<DropdownMenuTrigger asChild>
 									<Button
