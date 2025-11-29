@@ -3,7 +3,9 @@ import {
 	ArrowLeft,
 	Calendar,
 	Filter,
+	Home,
 	Loader2,
+	RefreshCw,
 	Search,
 } from "lucide-react";
 import React, { useEffect, useMemo, useState } from "react";
@@ -166,7 +168,7 @@ const Historico = () => {
 	// Renderização
 	if (loading) {
 		return (
-			<div className="flex justify-center items-center h-screen bg-slate-950">
+			<div className="flex justify-center items-center h-screen bg-slate-150 -mt-20">
 				<Loader2 className="h-16 w-16 animate-spin text-blue-400" />
 			</div>
 		);
@@ -174,10 +176,59 @@ const Historico = () => {
 
 	if (error) {
 		return (
-			<div className="flex justify-center items-center h-screen flex-col gap-6 bg-slate-950">
-				<AlertTriangle className="h-20 w-20 text-red-400" />
-				<p className="text-red-200">{error}</p>
-				<Button onClick={() => navigate("/")}>Voltar</Button>
+			<div className="flex justify-center items-center min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-650">
+				<div className="text-center px-6 py-12 max-w-md -mt-60">
+					{/* Ícone animado */}
+					<div className="relative inline-block mb-6">
+						<div className="absolute inset-0 bg-red-500/20 rounded-full blur-2xl animate-pulse"></div>
+						<div className="relative bg-slate-800/50 p-6 rounded-full border border-red-500/30">
+							<AlertTriangle
+								className="h-16 w-16 text-red-400"
+								strokeWidth={1.5}
+							/>
+						</div>
+					</div>
+
+					{/* Título */}
+					<h1 className="text-3xl font-bold text-white mb-3">
+						Oops! Algo deu errado
+					</h1>
+
+					{/* Descrição */}
+					<p className="text-slate-400 mb-2 leading-relaxed">
+						Não foi possível carregar os dados solicitados.
+					</p>
+					<p className="text-slate-500 text-sm mb-8">
+						Tente novamente ou volte para a página inicial.
+					</p>
+
+					{/* Botões de ação */}
+					<div className="flex flex-col sm:flex-row gap-3 justify-center">
+						<Button
+							onClick={fetchHistorico}
+							variant="outline"
+							className="bg-slate-800/50 border-slate-700 hover:bg-slate-700 text-slate-200 gap-2"
+						>
+							<RefreshCw className="h-4 w-4" />
+							Tentar Novamente
+						</Button>
+
+						<Button
+							onClick={() => navigate("/")}
+							className="bg-red-600 hover:bg-red-700 text-white gap-2"
+						>
+							<Home className="h-4 w-4" />
+							Voltar ao Início
+						</Button>
+					</div>
+
+					{/* Código de erro (opcional) */}
+					<div className="mt-8 pt-6 border-t border-slate-800">
+						<p className="text-slate-600 text-xs font-mono">
+							Erro: FETCH_FAILED
+						</p>
+					</div>
+				</div>
 			</div>
 		);
 	}
@@ -220,7 +271,7 @@ const Historico = () => {
 								<DropdownMenuTrigger asChild>
 									<Button
 										variant="outline"
-										className="w-full md:w-auto bg-slate-800/50 border-slate-700/50 text-white hover:bg-slate-700/50 hover:border-blue-500/50 transition-all duration-300 rounded-xl h-12"
+										className="flex-1 md:w-auto bg-slate-800/50 border-slate-700/50 text-white hover:bg-slate-700/50 hover:border-blue-500/50 transition-all duration-300 rounded-xl h-12"
 									>
 										<Filter className="h-4 w-4 mr-2" />
 										Prioridade:{" "}
@@ -244,7 +295,7 @@ const Historico = () => {
 								<DropdownMenuTrigger asChild>
 									<Button
 										variant="outline"
-										className="w-full md:w-auto bg-slate-800/50 border-slate-700/50 text-white hover:bg-slate-700/50 hover:border-blue-500/50 transition-all duration-300 rounded-xl h-12"
+										className="flex-1 md:w-auto bg-slate-800/50 border-slate-700/50 text-white hover:bg-slate-700/50 hover:border-blue-500/50 transition-all duration-300 rounded-xl h-12"
 									>
 										<Calendar className="h-4 w-4 mr-2" />
 										{filtroData === "recentes"
